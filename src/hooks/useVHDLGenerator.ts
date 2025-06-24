@@ -34,9 +34,11 @@ const useVHDLGenerator = () => {
     try {
       const data = await generateAndTestVhdl(description, testbench, topEntity);
       setGeneratedCode(data.design ?? "No design returned.");
-      setSimulationOutput(data.simulation_output ?? "No output returned.");
+      setSimulationOutput(
+        data.simulation_output ?? data.simulation_error ?? "No output returned."
+      );
     } catch (err) {
-      setGeneratedCode(`Error generating or simulating. Error: ${err}`);
+      setGeneratedCode(`Error generating or simulating. ${err}`);
     } finally {
       setLoading(false);
     }

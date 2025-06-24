@@ -5,6 +5,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import useVHDLGenerator from "@/hooks/useVHDLGenerator";
+import { ComponentLibrary } from "@/components/ComponentLibrary";
+import type { VHDLComponent } from "@/types/component";
 
 export default function VHDLGenerator() {
   const [description, setDescription] = useState("");
@@ -20,8 +22,19 @@ export default function VHDLGenerator() {
     loading,
   } = useVHDLGenerator();
 
+  const handleComponentSelect = (component: VHDLComponent) => {
+    setDescription(component.description);
+    if (component.testbench) {
+      setTestbenchEnabled(true);
+      setTestbench(component.testbench);
+      setTopEntity(component.testbench_name);
+    }
+  };
+
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
+    <div className="max-w-3xl mx-auto p-4 space-y-6 relative">
+      <ComponentLibrary onComponentSelect={handleComponentSelect} />
+
       <Card>
         <CardContent className="space-y-4">
           <Label htmlFor="description">Component Description</Label>

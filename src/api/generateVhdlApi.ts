@@ -22,6 +22,18 @@ export async function generateAndTestVhdl(
     body: JSON.stringify({ description, testbench, topEntity }),
   });
 
-  if (!res.ok) throw new Error("Failed to generate and test VHDL");
-  return await res.json();
+  let data;
+  try {
+    data = await res.json();
+  } catch {
+    throw new Error("Failed to parse server response");
+  }
+
+  if (!res.ok) {
+    if (data?.design) {
+      return data; // Return the design even if simulation failed
+    }
+    throw new Error("Failed to generate and test VHDL");
+  }
+  return data;
 }
