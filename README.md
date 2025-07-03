@@ -2,7 +2,7 @@
 
 Ovaj frontend omogućava korisnicima da putem web interfejsa unesu opis VHDL komponente i dobiju generisani VHDL kod koristeći LLM model. Komunicira sa backend servisom koji vrši generaciju koda.
 
-📦 Instalacija
+#### 📦 Instalacija
 
 Kloniranje repozitorija:
 
@@ -13,7 +13,7 @@ Instaliranje zavisnosti:
 
     npm install
 
-🚀 Pokretanje aplikacije
+#### 🚀 Pokretanje aplikacije
 
 Aplikacija se lokalno pokreće sa sljedećom komandom:
 
@@ -21,7 +21,7 @@ Aplikacija se lokalno pokreće sa sljedećom komandom:
 
 Nakon pokretanja, frontend će biti dostupan na adresi koju ispiše Vite (default http://localhost:5173).
 
-🧱 Tehnologije
+#### 🧱 Tehnologije
 
 - Vite
 
