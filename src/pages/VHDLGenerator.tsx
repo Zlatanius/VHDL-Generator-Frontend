@@ -3,49 +3,41 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import useVHDLGenerator from "@/hooks/useVHDLGenerator";
+import { ComponentLibrary } from "@/components/ComponentLibrary";
+import type { VHDLComponent } from "@/types/component";
 
-// Main component for VHDL code generation UI
 export default function VHDLGenerator() {
-  // State to hold user input description
   const [description, setDescription] = useState("");
-  // State to hold the generated VHDL code from the API
-  const [generatedCode, setGeneratedCode] = useState("");
-  // Loading state to show a spinner/text during request
-  const [loading, setLoading] = useState(false);
+  const [testbenchEnabled, setTestbenchEnabled] = useState(false);
+  const [testbench, setTestbench] = useState("");
+  const [topEntity, setTopEntity] = useState("");
 
-  // Function to send the description to the backend and retrieve VHDL code
-  const generateCode = async () => {
-    setLoading(true); // Show loading state
-    setGeneratedCode(""); // Clear previous output
+  const {
+    generatedCode,
+    simulationOutput,
+    generateCode,
+    generateWithTestbench,
+    loading,
+  } = useVHDLGenerator();
 
-    try {
-      // Send POST request to the backend API
-      const response = await fetch("http://localhost:5000/api/generate-vhdl", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ description }), // Send user input as JSON
-      });
-
-      // Parse the response and extract code
-      const data = await response.json();
-      setGeneratedCode(data.code || "No code returned.");
-    } catch (error) {
-      // Handle any errors during fetch
-      setGeneratedCode("Error generating code.");
-    } finally {
-      setLoading(false); // Hide loading state
+  const handleComponentSelect = (component: VHDLComponent) => {
+    setDescription(component.description);
+    if (component.testbench) {
+      setTestbenchEnabled(true);
+      setTestbench(component.testbench);
+      setTopEntity(component.testbench_name);
     }
   };
 
   return (
-    <div className="max-w-3xl mx-auto p-4 space-y-6">
-      {/* Card for input section */}
+    <div className="max-w-3xl mx-auto p-4 space-y-6 relative">
+      <ComponentLibrary onComponentSelect={handleComponentSelect} />
+
       <Card>
         <CardContent className="space-y-4">
           <Label htmlFor="description">Component Description</Label>
-          {/* Textarea where user types the component spec */}
           <Textarea
             id="description"
             value={description}
@@ -53,20 +45,63 @@ export default function VHDLGenerator() {
             placeholder="e.g., A 4-bit counter with enable and reset..."
             rows={6}
           />
-          {/* Button to trigger VHDL code generation */}
-          <Button onClick={generateCode} disabled={loading}>
+
+          <div className="flex items-center space-x-4">
+            <Label htmlFor="enableTestbench">Include Testbench</Label>
+            <Switch
+              id="enableTestbench"
+              checked={testbenchEnabled}
+              onCheckedChange={setTestbenchEnabled}
+            />
+          </div>
+
+          {testbenchEnabled && (
+            <>
+              <Label htmlFor="topEntity">Top-Level Entity Name</Label>
+              <Textarea
+                id="topEntity"
+                value={topEntity}
+                onChange={(e) => setTopEntity(e.target.value)}
+                placeholder="e.g., tb_my_component"
+              />
+              <Label htmlFor="testbench">Testbench Code</Label>
+              <Textarea
+                id="testbench"
+                value={testbench}
+                onChange={(e) => setTestbench(e.target.value)}
+                placeholder="Paste your testbench code here..."
+                rows={6}
+              />
+            </>
+          )}
+
+          <Button
+            onClick={
+              testbenchEnabled
+                ? () => generateWithTestbench(description, testbench, topEntity)
+                : () => generateCode(description)
+            }
+            disabled={loading}
+          >
             {loading ? "Generating..." : "Generate VHDL Code"}
           </Button>
         </CardContent>
       </Card>
 
-      {/* Card for output section, shown only if code is returned */}
       {generatedCode && (
         <Card>
-          <CardContent>
+          <CardContent className="space-y-2">
             <Label>Generated VHDL Code</Label>
-            {/* Read-only textarea to display generated code */}
             <Textarea value={generatedCode} readOnly rows={10} />
+          </CardContent>
+        </Card>
+      )}
+
+      {testbenchEnabled && simulationOutput && (
+        <Card>
+          <CardContent className="space-y-2">
+            <Label>Simulation Output</Label>
+            <Textarea value={simulationOutput} readOnly rows={10} />
           </CardContent>
         </Card>
       )}
